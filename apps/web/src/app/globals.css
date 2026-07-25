@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+html { background: #0A0A0F; --font-inter: "Segoe UI Variable", "Helvetica Neue", Arial, sans-serif; --font-space: Geist, "Segoe UI Variable", "Helvetica Neue", Arial, sans-serif; }
+body { margin: 0; background: #0A0A0F; color: #F6F6FB; font-family: var(--font-inter), sans-serif; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+::selection { background: #6C63FF; color: white; }
+.glass { background: rgba(19, 19, 26, .72); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,.09); }
+.focus-ring:focus-visible { outline: 2px solid #63FFD8; outline-offset: 3px; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

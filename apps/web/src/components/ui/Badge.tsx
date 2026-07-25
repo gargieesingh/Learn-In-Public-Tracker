@@ -1,0 +1,2 @@
+export const topicColors = ['#6C63FF', '#63FFD8', '#FF6B6B', '#FFD93D', '#4ECDC4', '#A8E6CF', '#FF8B94', '#C3A6FF']
+export function Badge({ children, index = 0 }: { children: React.ReactNode; index?: number }) { const color = topicColors[index % topicColors.length]; return <span style={{ color, backgroundColor: `${color}18`, borderColor: `${color}45` }} className="inline-flex rounded-full border px-3 py-1 text-xs font-bold">{children}</span> }
