@@ -6,9 +6,62 @@ import type { Log, Tracker } from '../../types'
 import { api } from '../../lib/api'
 
 const today = () => new Date().toISOString().slice(0, 10)
+
 export function LogForm({ tracker, ownerToken, existing, onCreated }: { tracker: Tracker; ownerToken: string; existing: Log[]; onCreated: (log: Log) => void }) {
-  const fileInput = useRef<HTMLInputElement>(null); const [content, setContent] = useState(''); const [topic, setTopic] = useState(tracker.topics[0]); const [file, setFile] = useState<File | null>(null); const [preview, setPreview] = useState(''); const [error, setError] = useState(''); const [saving, setSaving] = useState(false)
-  const choose = (next?: File) => { if (!next) return; if (!next.type.match(/^image\/(jpeg|png|gif|webp)$/) || next.size > 5 * 1024 * 1024) { setError('Choose a JPG, PNG, GIF, or WebP image under 5MB.'); return } setFile(next); setPreview(URL.createObjectURL(next)); setError('') }
-  const submit = async (event: React.FormEvent) => { event.preventDefault(); if (content.trim().length < 20 || !file) { setError('Write at least 20 characters and add an image.'); return } if (existing.some((log) => log.logged_date === today()) && !confirm('You already logged today. Add another entry?')) return; setSaving(true); setError(''); try { const data = new FormData(); data.set('content', content.trim()); data.set('topic_tag', topic); data.set('logged_date', today()); data.set('image', file); const log = await api.createLog(tracker.slug, ownerToken, data); onCreated(log); setContent(''); setFile(null); setPreview(''); if (fileInput.current) fileInput.current.value = '' } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save your log.') } finally { setSaving(false) } }
-  return <form onSubmit={submit} className="border-y border-[#dfd8cf] py-6"><div className="flex items-baseline justify-between gap-3"><h2 className="font-display text-2xl font-semibold tracking-[-.045em] text-[#29241f]">Log today&apos;s learning</h2><span className="text-xs text-[#93897f]">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span></div><label className="mt-5 block text-sm font-medium text-[#413a34]">Topic<select value={topic} onChange={(event) => setTopic(event.target.value)} className="mt-2 w-full border-b border-[#cfc6bc] bg-transparent px-0 py-2.5 text-sm outline-none transition focus:border-[#527c67]">{tracker.topics.map((item) => <option key={item}>{item}</option>)}</select></label><label className="mt-5 block text-sm font-medium text-[#413a34]">What did you learn?<textarea value={content} onChange={(event) => setContent(event.target.value)} maxLength={1000} rows={6} placeholder="Write the detail future you will want to remember." className="mt-2 w-full resize-none border-b border-[#cfc6bc] bg-transparent px-0 py-2.5 text-sm leading-6 text-[#403a35] outline-none transition placeholder:text-[#aaa096] focus:border-[#527c67]" /></label><p className="mt-1 text-right text-xs text-[#9a9086]">{content.length}/1000</p><div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); choose(event.dataTransfer.files[0]) }} onClick={() => fileInput.current?.click()} className="mt-5 cursor-pointer border border-dashed border-[#cfc6bc] p-4 text-center transition hover:border-[#527c67] hover:bg-[#f4f1eb]"><input ref={fileInput} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(event) => choose(event.target.files?.[0])} />{preview ? <><img src={preview} alt="Selected learning log image preview" className="mx-auto h-36 max-w-full object-cover" /><button type="button" onClick={(event) => { event.stopPropagation(); setFile(null); setPreview(''); if (fileInput.current) fileInput.current.value = '' }} className="mt-3 text-xs font-semibold text-[#a74f45]">Remove image</button></> : <><p className="text-sm font-medium text-[#574f48]">Add a screenshot, note, or visual reference</p><p className="mt-1 text-xs text-[#92877d]">JPG, PNG, GIF, or WebP · 5MB max</p></>}</div>{error && <p className="mt-4 border border-[#edc9c4] bg-[#fff1ef] p-3 text-sm text-[#a44842]">{error}</p>}<button disabled={saving} className="mt-5 flex w-full items-center justify-between bg-[#bd694b] px-4 py-3.5 font-display text-sm font-semibold text-white transition hover:bg-[#a95a3e] active:scale-[.99] disabled:opacity-50"><span>{saving ? 'Saving your note…' : 'Add to learning log'}</span><span>→</span></button></form>
+  const fileInput = useRef<HTMLInputElement>(null)
+  const [content, setContent] = useState('')
+  const [topic, setTopic] = useState(tracker.topics[0])
+  const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState('')
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const choose = (next?: File) => {
+    if (!next) return
+    if (!next.type.match(/^image\/(jpeg|png|gif|webp)$/) || next.size > 5 * 1024 * 1024) {
+      setError('Choose a JPG, PNG, GIF, or WebP image under 5MB.')
+      return
+    }
+    setFile(next)
+    setPreview(URL.createObjectURL(next))
+    setError('')
+  }
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (content.trim().length < 20 || !file) {
+      setError('Write at least 20 characters and add an image.')
+      return
+    }
+    if (existing.some((log) => log.logged_date === today()) && !confirm('You already logged today. Add another entry?')) return
+    setSaving(true)
+    setError('')
+    try {
+      const data = new FormData()
+      data.set('content', content.trim())
+      data.set('topic_tag', topic)
+      data.set('logged_date', today())
+      data.set('image', file)
+      const log = await api.createLog(tracker.slug, ownerToken, data)
+      onCreated(log)
+      setContent('')
+      setFile(null)
+      setPreview('')
+      if (fileInput.current) fileInput.current.value = ''
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not save your log.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <form onSubmit={submit} className="paper-card log-form">
+    <div className="log-form__head"><div><h2 className="log-form__title">Log today&apos;s learning</h2><p className="log-form__copy">Write the detail future you will want to find.</p></div><span className="log-form__date">{new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span></div>
+    <label className="field-label">Topic<select value={topic} onChange={(event) => setTopic(event.target.value)} className="field-select">{tracker.topics.map((item) => <option key={item}>{item}</option>)}</select></label>
+    <textarea value={content} onChange={(event) => setContent(event.target.value)} maxLength={1000} rows={5} placeholder="What did you learn? Record the decision, tradeoff, or link you will want later." className="field-textarea" />
+    <p className="field-count">{content.length}/1000</p>
+    <div onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); choose(event.dataTransfer.files[0]) }} onClick={() => fileInput.current?.click()} className="upload-zone"><input ref={fileInput} type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={(event) => choose(event.target.files?.[0])} />{preview ? <><img src={preview} alt="Selected learning log image preview" className="upload-preview" /><button type="button" onClick={(event) => { event.stopPropagation(); setFile(null); setPreview(''); if (fileInput.current) fileInput.current.value = '' }} className="remove-link mt-2">Remove image</button></> : <p>Attach a screenshot, note, diagram, or console output. JPG, PNG, GIF, or WebP up to 5MB.</p>}</div>
+    {error && <p className="form-error">{error}</p>}
+    <button disabled={saving} className="accent-button">{saving ? 'Logging entry...' : 'Log entry'}</button>
+  </form>
 }
