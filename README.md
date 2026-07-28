@@ -4,6 +4,11 @@ StreakLog is a **learn-in-public streak tracker**, built as a submission for **T
 
 **Live app:** [https://streak-tracker-web.vercel.app/](https://streak-tracker-web.vercel.app/)
 
+## Demo
+
+- Watch on YouTube: [https://youtu.be/0dStiuFgdMs](https://youtu.be/0dStiuFgdMs)
+- Or view the recording directly from this repo: [docs/LearnInPub.mp4](docs/LearnInPub.mp4)
+
 ## Screenshots
 
 **Landing page: start a learning log**
