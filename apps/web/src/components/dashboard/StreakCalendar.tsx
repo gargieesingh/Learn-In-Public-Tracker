@@ -46,7 +46,6 @@ export function StreakCalendar({ logs, isOwner, topics, onDelete }: { logs: Log[
       {range === 'week' && <div className="calendar-view calendar-week">{weekDays.map((day) => chip(day, day.toLocaleDateString(undefined, { weekday: 'short' })))}</div>}
       {range === 'month' && <div className="calendar-view calendar-month">{Array.from({ length: monthOffset }, (_, index) => <span key={`blank-${index}`} />)}{monthDays.map((day) => chip(day, day.toLocaleDateString(undefined, { weekday: 'narrow' })))}</div>}
       {range === 'year' && <div className="calendar-view calendar-year">{yearMonths.map((days, month) => <section key={month} className="month-strip"><h3>{new Date(now.getFullYear(), month, 1).toLocaleDateString(undefined, { month: 'short' })}</h3><div className="month-strip__days">{days.map((day) => chip(day, '', true))}</div></section>)}</div>}
-      <p className="calendar-legend">Orange chips mark days with a published learning entry. Select a day to read its entries.</p>
     </section>
     {selected && <Modal title={`Entries from ${label(selected)}`} onClose={() => setSelected(null)}>{selectedLogs.length ? <div className="space-y-3">{selectedLogs.map((log) => <LogCard key={log.id} log={log} topicIndex={Math.max(0, topics.indexOf(log.topic_tag))} isOwner={isOwner} onDelete={onDelete} />)}</div> : <p className="text-sm text-[var(--muted)]">No entries were recorded on this date.</p>}</Modal>}
   </>

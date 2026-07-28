@@ -14,7 +14,6 @@ import { LogFeed } from '../../../components/dashboard/LogFeed'
 import { LogForm } from '../../../components/dashboard/LogForm'
 import { SharePanel } from '../../../components/dashboard/SharePanel'
 import { StreakCalendar } from '../../../components/dashboard/StreakCalendar'
-import { StreakStats } from '../../../components/dashboard/StreakStats'
 
 const tagClass = ['tag tag--orange', 'tag tag--peach', 'tag tag--cream']
 
@@ -65,10 +64,10 @@ export default function DashboardPage() {
     {shareOpen && <div className="share-tray"><div className="share-tray__inner"><SharePanel url={url} /></div></div>}
     <div className="dashboard-grid">
       <section className="min-w-0">
-        {checked && !isOwner && <p className="public-notice">Public view. Editing stays on the device that created this log.</p>}
+        {checked && !isOwner && <p className="public-notice">Public view. Sign in as the owner to add or remove learning entries.</p>}
         <section className={checked && !isOwner ? 'mt-6' : ''}><div className="section-heading"><div><p className="eyebrow">{tracker.name}&apos;s public record</p><h1>Learning entries</h1><p>Dated notes from the learning log.</p></div><span className="section-count">{logs.length} entries</span></div><LogFeed logs={logs} loading={logsLoading} isOwner={isOwner} topics={tracker.topics} onDelete={deleteLog} /></section>
       </section>
-      <aside className="feed-rail lg:sticky lg:top-5"><div className="feed-rail__inner"><div className="profile-top"><span className="profile-initial">{tracker.name.slice(0, 1).toUpperCase()}</span><div><h2 className="profile-title">{tracker.name}&apos;s learning log</h2><p className="profile-meta">Learning {tracker.topics[0]} since {since}</p></div></div><div className="profile-tags">{tracker.topics.map((topic, index) => <span key={topic} className={tagClass[index % tagClass.length]}>{topic}</span>)}</div><div className="profile-real-stats"><div><strong>{tracker.current_streak}</strong><span>day streak</span></div><div><strong>{entriesThisMonth}</strong><span>entries this month</span></div><div><strong>{tracker.longest_streak}</strong><span>longest streak</span></div></div></div><section className="side-card"><p className="feed-rail__streak-label">Weekly streak</p><StreakStats current={tracker.current_streak} longest={tracker.longest_streak} /></section><section className="side-card"><StreakCalendar logs={logs} isOwner={isOwner} topics={tracker.topics} onDelete={deleteLog} /></section></aside>
+      <aside className="feed-rail lg:sticky lg:top-5"><div className="feed-rail__inner"><div className="profile-top"><span className="profile-initial">{tracker.name.slice(0, 1).toUpperCase()}</span><div><h2 className="profile-title">{tracker.name}&apos;s learning log</h2><p className="profile-meta">Learning {tracker.topics[0]} since {since}</p></div></div><div className="profile-tags">{tracker.topics.map((topic, index) => <span key={topic} className={tagClass[index % tagClass.length]}>{topic}</span>)}</div><div className="profile-real-stats"><div><strong>{tracker.current_streak}</strong><span>day streak</span></div><div><strong>{entriesThisMonth}</strong><span>entries this month</span></div><div><strong>{tracker.longest_streak}</strong><span>longest streak</span></div></div></div><section className="side-card"><StreakCalendar logs={logs} isOwner={isOwner} topics={tracker.topics} onDelete={deleteLog} /></section></aside>
     </div>
     {isOwner && ownerToken && <><button onClick={composerOpen ? closeComposer : openComposer} aria-label={composerOpen ? 'Close log entry form' : 'Create a learning log entry'} className="composer-fab">{composerOpen ? '×' : '+'}</button>{composerOpen && <div ref={composer} className="composer-dock"><button onClick={closeComposer} className="composer-dock__close">Close</button><LogForm tracker={tracker} ownerToken={ownerToken} existing={logs} onCreated={created} /></div>}</>}
   </main>
