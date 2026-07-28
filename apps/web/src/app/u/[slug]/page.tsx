@@ -14,6 +14,7 @@ import { LogFeed } from '../../../components/dashboard/LogFeed'
 import { LogForm } from '../../../components/dashboard/LogForm'
 import { SharePanel } from '../../../components/dashboard/SharePanel'
 import { StreakCalendar } from '../../../components/dashboard/StreakCalendar'
+import { Modal } from '../../../components/ui/Modal'
 
 const tagClass = ['tag tag--orange', 'tag tag--peach', 'tag tag--cream']
 
@@ -60,8 +61,8 @@ export default function DashboardPage() {
   if (trackerError || !tracker) return <main className="page-shell grid place-items-center p-6 text-center"><div><p className="font-display text-3xl font-semibold tracking-tight">This learning log does not exist.</p><Link href="/" className="accent-button inline-block">Start a learning log</Link></div></main>
 
   return <main id="main-content" className="dashboard-shell">
-    <header className="site-header"><div className="site-header__inner"><Link href="/" className="wordmark"><span className="wordmark__mark">S</span>StreakLog</Link><div className="flex items-center gap-3"><span className="utility-label hidden sm:block">/u/{slug}</span><button onClick={() => setShareOpen(!shareOpen)} className="utility-button">Share</button></div></div></header>
-    {shareOpen && <div className="share-tray"><div className="share-tray__inner"><SharePanel url={url} /></div></div>}
+    <header className="site-header"><div className="site-header__inner"><Link href="/" className="wordmark"><span className="wordmark__mark">L</span>Learn In Pub</Link><div className="flex items-center gap-3"><button onClick={() => setShareOpen(true)} aria-label="Share this learning log" className="share-trigger"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 8a3 3 0 1 0-2.83-4H15a3 3 0 0 0 .06 2.12L8.9 9.71a3 3 0 1 0 0 4.58l6.16 3.59A3 3 0 1 0 18 16a3 3 0 0 0-2.94 2.4l-6.16-3.6a3 3 0 0 0 0-1.6l6.16-3.6A3 3 0 0 0 18 8Z" /></svg></button></div></div></header>
+    {shareOpen && <Modal title="Share your learning log" onClose={() => setShareOpen(false)}><SharePanel url={url} /></Modal>}
     <div className="dashboard-grid">
       <section className="min-w-0">
         {checked && !isOwner && <p className="public-notice">Public view. Sign in as the owner to add or remove learning entries.</p>}
@@ -69,6 +70,6 @@ export default function DashboardPage() {
       </section>
       <aside className="feed-rail lg:sticky lg:top-5"><div className="feed-rail__inner"><div className="profile-top"><span className="profile-initial">{tracker.name.slice(0, 1).toUpperCase()}</span><div><h2 className="profile-title">{tracker.name}&apos;s learning log</h2><p className="profile-meta">Learning {tracker.topics[0]} since {since}</p></div></div><div className="profile-tags">{tracker.topics.map((topic, index) => <span key={topic} className={tagClass[index % tagClass.length]}>{topic}</span>)}</div><div className="profile-real-stats"><div><strong>{tracker.current_streak}</strong><span>day streak</span></div><div><strong>{entriesThisMonth}</strong><span>entries this month</span></div><div><strong>{tracker.longest_streak}</strong><span>longest streak</span></div></div></div><section className="side-card"><StreakCalendar logs={logs} isOwner={isOwner} topics={tracker.topics} onDelete={deleteLog} /></section></aside>
     </div>
-    {isOwner && ownerToken && <><button onClick={composerOpen ? closeComposer : openComposer} aria-label={composerOpen ? 'Close log entry form' : 'Create a learning log entry'} className="composer-fab">{composerOpen ? '×' : '+'}</button>{composerOpen && <div ref={composer} className="composer-dock"><button onClick={closeComposer} className="composer-dock__close">Close</button><LogForm tracker={tracker} ownerToken={ownerToken} existing={logs} onCreated={created} /></div>}</>}
+    {isOwner && ownerToken && <><button onClick={composerOpen ? closeComposer : openComposer} aria-label={composerOpen ? 'Close log entry form' : 'Create a learning log entry'} className="composer-fab">{composerOpen ? '×' : '+'}</button>{composerOpen && <div className="composer-backdrop" onMouseDown={closeComposer}><div ref={composer} onMouseDown={(event) => event.stopPropagation()} className="composer-dock"><LogForm tracker={tracker} ownerToken={ownerToken} existing={logs} onCreated={created} /></div></div>}</>}
   </main>
 }
