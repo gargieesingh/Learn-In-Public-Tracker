@@ -4,6 +4,8 @@ StreakLog is a **learn-in-public streak tracker**, built as a submission for **T
 
 [**Visit Site**](https://streak-tracker-web.vercel.app/)
 
+[**Take a look on what she is learning...**](https://streak-tracker-web.vercel.app/u/gargie-system-design-ajey)
+
 ## Demo
 
 
