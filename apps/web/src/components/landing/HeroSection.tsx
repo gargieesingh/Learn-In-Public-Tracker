@@ -48,9 +48,8 @@ export function HeroSection() {
   const previewTopic = topics.find((topic) => topic !== 'Other') || 'Learning in public'
 
   return <main ref={root} id="main-content" className="landing-page">
-    <header className="site-header"><div className="site-header__inner"><div className="wordmark"><span className="wordmark__mark">S</span>StreakLog</div><span className="utility-label">learn in public</span></div></header>
     <div className="landing-shell">
-      <section className="landing-copy"><p className="eyebrow">A public learning record</p><h1 className="landing-title">Show the work.<br />Keep the streak.</h1><p className="landing-description">Create a page for the small things you learned today. Each entry keeps a visible record of the days you showed up.</p>
+      <section className="landing-copy"><p className="eyebrow">A public learning record</p><h1 className="landing-title">Show the work.<br />Keep the streak.</h1>
         <form onSubmit={submit} className="landing-form landing-float"><h2>Start a learning log</h2><p>Pick a focus and create your public page.</p><label className="field-label">Your name<input value={name} onChange={(event) => setName(event.target.value.replace(/[^a-zA-Z ]/g, ''))} maxLength={50} placeholder="Rohan Verma" className="field-input" /></label><p className="field-count">{name.length}/50</p><TopicSelector selected={topics} onChange={setTopics} customTopic={customTopic} onCustomTopic={setCustomTopic} />{error && <p className="form-error">{error}</p>}<button disabled={!valid || loading} className="accent-button">{loading ? 'Creating your page...' : 'Start my streak'}</button><p className="landing-form__note">No account required. This device keeps your owner key.</p></form>
       </section>
       <section className="hero-cards" aria-label="StreakLog preview">
