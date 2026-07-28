@@ -5,19 +5,26 @@ import { useRouter } from 'next/navigation'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { api } from '../../lib/api'
+import { useAuth } from '../../hooks/useAuth'
 import { TopicSelector } from './TopicSelector'
 import { SharePanel } from '../dashboard/SharePanel'
 
 export function HeroSection() {
   const root = useRef<HTMLElement>(null)
   const router = useRouter()
+  const { user, accessToken, loading: authLoading, signInWithGoogle, signOut } = useAuth()
   const [name, setName] = useState('')
   const [topics, setTopics] = useState<string[]>([])
   const [customTopic, setCustomTopic] = useState('')
   const [loading, setLoading] = useState(false)
+  const [authAction, setAuthAction] = useState(false)
   const [error, setError] = useState('')
-  const [created, setCreated] = useState<{ slug: string; name: string } | null>(null)
-  const week = useMemo(() => Array.from({ length: 7 }, (_, index) => { const day = new Date(); day.setDate(day.getDate() - 3 + index); return day }), [])
+  const [created, setCreated] = useState<{ slug: string; name: string; existing: boolean } | null>(null)
+  const week = useMemo(() => Array.from({ length: 7 }, (_, index) => {
+    const day = new Date()
+    day.setDate(day.getDate() - 3 + index)
+    return day
+  }), [])
 
   useGSAP(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -28,36 +35,63 @@ export function HeroSection() {
   }, { scope: root })
 
   const valid = /^[a-zA-Z ]{2,50}$/.test(name.trim()) && topics.length > 0 && (!topics.includes('Other') || customTopic.trim().length > 1)
+
+  const startGoogleSignIn = async () => {
+    setAuthAction(true)
+    setError('')
+    try {
+      await signInWithGoogle()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Google sign-in did not start.')
+      setAuthAction(false)
+    }
+  }
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!valid) return
+    if (!valid || !accessToken) {
+      setError('Sign in with Google before creating your learning log.')
+      return
+    }
     setLoading(true)
     setError('')
     try {
-      const tracker = await api.createTracker({ name: name.trim(), topics, customTopic })
-      localStorage.setItem(`streaklog_owner_${tracker.slug}`, JSON.stringify({ owner_token: tracker.owner_token }))
-      setCreated({ slug: tracker.slug, name: tracker.name })
+      const tracker = await api.createTracker({ name: name.trim(), topics, customTopic }, accessToken)
+      setCreated({ slug: tracker.slug, name: tracker.name, existing: tracker.existing })
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : 'Page creation did not complete.'
-      setError(message === 'Failed to fetch' ? 'The StreakLog API is offline. Set the Supabase values in apps/api/.env, then restart npm run dev.' : message)
-    } finally { setLoading(false) }
+      setError(message === 'Failed to fetch' ? 'The StreakLog API is offline. Check your local API configuration, then restart npm run dev.' : message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const url = created ? `${window.location.origin}/u/${created.slug}` : ''
-  const previewName = name.trim() || 'Your name'
+  const url = created ? window.location.origin + '/u/' + created.slug : ''
+  const previewName = name.trim() || user?.user_metadata.full_name || 'Your name'
   const previewTopic = topics.find((topic) => topic !== 'Other') || 'Learning in public'
 
   return <main ref={root} id="main-content" className="landing-page">
     <div className="landing-shell">
-      <section className="landing-copy"><p className="eyebrow">A public learning record</p><h1 className="landing-title">Show the work.<br />Keep the streak.</h1>
-        <form onSubmit={submit} className="landing-form landing-float"><h2>Start a learning log</h2><p>Pick a focus and create your public page.</p><label className="field-label">Your name<input value={name} onChange={(event) => setName(event.target.value.replace(/[^a-zA-Z ]/g, ''))} maxLength={50} placeholder="Rohan Verma" className="field-input" /></label><p className="field-count">{name.length}/50</p><TopicSelector selected={topics} onChange={setTopics} customTopic={customTopic} onCustomTopic={setCustomTopic} />{error && <p className="form-error">{error}</p>}<button disabled={!valid || loading} className="accent-button">{loading ? 'Creating your page...' : 'Start my streak'}</button><p className="landing-form__note">No account required. This device keeps your owner key.</p></form>
+      <section className="landing-copy">
+        <p className="eyebrow">A public learning record</p>
+        <h1 className="landing-title">Show the work.<br />Keep the streak.</h1>
+        <form onSubmit={submit} className="landing-form landing-float">
+          <h2>Start a learning log</h2>
+          {authLoading ? <p className="auth-copy">Checking your sign-in...</p> : user ? <div className="auth-status"><span>Signed in as {user.email}</span><button type="button" onClick={() => void signOut()} className="auth-status__button">Sign out</button></div> : <button type="button" disabled={authAction} onClick={() => void startGoogleSignIn()} className="google-button">{authAction ? 'Opening Google...' : 'Continue with Google'}</button>}
+          <label className="field-label">Your name<input value={name} onChange={(event) => setName(event.target.value.replace(/[^a-zA-Z ]/g, ''))} maxLength={50} placeholder="Rohan Verma" className="field-input" /></label>
+          <p className="field-count">{name.length}/50</p>
+          <TopicSelector selected={topics} onChange={setTopics} customTopic={customTopic} onCustomTopic={setCustomTopic} />
+          {error && <p className="form-error">{error}</p>}
+          <button disabled={!valid || loading || !accessToken} className="accent-button">{loading ? 'Creating your page...' : user ? 'Start my streak' : 'Sign in to create a page'}</button>
+          <p className="landing-form__note">Anyone with your link can view the public learning log.</p>
+        </form>
       </section>
       <section className="hero-cards" aria-label="StreakLog preview">
         <article className="hero-card hero-card--today"><p className="hero-card__label">Today&apos;s log</p><h2 className="hero-card__title">Write one useful thing down.</h2><p className="hero-card__copy">A decision, a pattern, or a link for future you.</p><div className="mini-track"><i /></div><p className="mini-action">Start with today</p></article>
         <article className="hero-card hero-card--profile"><div className="hero-profile"><span className="avatar">{previewName.slice(0, 1).toUpperCase()}</span><div><h3>{previewName}</h3><p>{previewTopic}</p></div></div><div className="hero-stats"><div className="hero-stat"><strong>0</strong><span>day streak</span></div><div className="hero-stat"><strong>0</strong><span>entries this month</span></div><div className="hero-stat"><strong>0</strong><span>longest streak</span></div></div></article>
-        <article className="hero-card hero-card--week"><p className="hero-card__label">Weekly streak</p><div className="week-row">{week.map((day, index) => <span key={day.toISOString()} className={`week-chip ${index < 3 ? 'is-active' : ''}`}><span>{day.toLocaleDateString(undefined, { weekday: 'short' })}</span><strong>{day.getDate()}</strong></span>)}</div></article>
+        <article className="hero-card hero-card--week"><p className="hero-card__label">Weekly streak</p><div className="week-row">{week.map((day, index) => <span key={day.toISOString()} className={'week-chip ' + (index < 3 ? 'is-active' : '')}><span>{day.toLocaleDateString(undefined, { weekday: 'short' })}</span><strong>{day.getDate()}</strong></span>)}</div></article>
       </section>
     </div>
-    {created && <div className="modal-backdrop"><section className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="created-title"><h2 id="created-title" className="modal-title">Your streak page is live</h2><p className="mt-2 text-sm text-[var(--muted)]">Share the page when you are ready to log the first day.</p><p className="field-input break-all font-mono text-sm">{url}</p><div className="mt-5"><SharePanel url={url} /></div><button onClick={() => router.push(`/u/${created.slug}`)} className="accent-button mt-5 w-full">Go to my learning log</button></section></div>}
+    {created && <div className="modal-backdrop"><section className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="created-title"><h2 id="created-title" className="modal-title">{created.existing ? 'Your learning log is ready' : 'Your streak page is live'}</h2><p className="mt-2 text-sm text-[var(--muted)]">{created.existing ? 'This Google account already owns a learning log. We opened the existing page instead of creating a duplicate.' : 'Share the page when you are ready to log the first day.'}</p><p className="field-input break-all font-mono text-sm">{url}</p><div className="mt-5"><SharePanel url={url} /></div><button onClick={() => router.push('/u/' + created.slug)} className="accent-button mt-5 w-full">Go to my learning log</button></section></div>}
   </main>
 }

@@ -124,3 +124,21 @@ html:has(.landing-page), body:has(.landing-page) { height: 100%; min-height: 100
   .topic-head { margin: 7px 0 4px; }
   .topic-toggle { padding: 3px 7px; }
 }
+
+.google-button { width: 100%; margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; background: #fffaf3; color: var(--ink); padding: 10px 12px; font-size: 13px; font-weight: 700; transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease; }
+.google-button:hover { border-color: var(--orange-light); background: var(--orange-pale); }
+.google-button:active { transform: scale(.98); }
+.auth-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 11px; }
+.auth-status span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-status__button { flex: 0 0 auto; border: 0; background: transparent; color: var(--orange-dark); padding: 0; font-size: 11px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.auth-copy { margin-top: 8px !important; }
+
+@media (min-width: 768px) and (max-height: 900px) {
+  .google-button { margin-top: 9px; padding: 8px 10px; }
+  .auth-status { margin-top: 9px; }
+}
+
+@media (max-width: 767px) {
+  .google-button { margin-top: 8px; padding: 8px 10px; font-size: 12px; }
+  .auth-status { margin-top: 8px; font-size: 10px; }
+}

@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useOwner } from '../../../hooks/useOwner'
+import { useAuth } from '../../../hooks/useAuth'
 import { useTracker } from '../../../hooks/useTracker'
 import { useLogs } from '../../../hooks/useLogs'
 import { api } from '../../../lib/api'
@@ -22,7 +23,8 @@ export default function DashboardPage() {
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug
   const { tracker, loading: trackerLoading, error: trackerError, reload } = useTracker(slug)
   const { logs, setLogs, loading: logsLoading } = useLogs(slug)
-  const { isOwner, ownerToken, checked } = useOwner(slug)
+  const { accessToken } = useAuth()
+  const { isOwner, ownerToken, checked } = useOwner(slug, accessToken)
   const [shareOpen, setShareOpen] = useState(false)
   const [composerOpen, setComposerOpen] = useState(false)
   const composer = useRef<HTMLDivElement>(null)
