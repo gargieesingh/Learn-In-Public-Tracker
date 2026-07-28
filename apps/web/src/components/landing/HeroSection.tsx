@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
@@ -20,6 +20,7 @@ export function HeroSection() {
   const [authAction, setAuthAction] = useState(false)
   const [error, setError] = useState('')
   const [created, setCreated] = useState<{ slug: string; name: string; existing: boolean } | null>(null)
+  const [checkingExisting, setCheckingExisting] = useState(false)
   const week = useMemo(() => Array.from({ length: 7 }, (_, index) => {
     const day = new Date()
     day.setDate(day.getDate() - 3 + index)
@@ -33,6 +34,23 @@ export function HeroSection() {
       .fromTo('.landing-float', { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.62, ease: 'power2.out' }, 0.18)
       .to('.landing-float', { y: -5, duration: 3.8, ease: 'sine.inOut', yoyo: true, repeat: -1 })
   }, { scope: root })
+
+  useEffect(() => {
+    if (authLoading || !user || !accessToken) return
+    let active = true
+    setCheckingExisting(true)
+    void api.getMyTracker(accessToken).then((tracker) => {
+      if (!active) return
+      if (tracker) {
+        router.replace('/u/' + tracker.slug)
+      } else {
+        setCheckingExisting(false)
+      }
+    }).catch(() => {
+      if (active) setCheckingExisting(false)
+    })
+    return () => { active = false }
+  }, [authLoading, user, accessToken, router])
 
   const valid = /^[a-zA-Z ]{2,50}$/.test(name.trim()) && topics.length > 0 && (!topics.includes('Other') || customTopic.trim().length > 1)
 
@@ -77,12 +95,14 @@ export function HeroSection() {
         <h1 className="landing-title">Show the work.<br />Keep the streak.</h1>
         <form onSubmit={submit} className="landing-form landing-float">
           <h2>Start a learning log</h2>
-          {authLoading ? <p className="auth-copy">Checking your sign-in...</p> : user ? <div className="auth-status"><span>Signed in as {user.email}</span><button type="button" onClick={() => void signOut()} className="auth-status__button">Sign out</button></div> : <button type="button" disabled={authAction} onClick={() => void startGoogleSignIn()} className="google-button">{authAction ? 'Opening Google...' : 'Continue with Google'}</button>}
-          <label className="field-label">Your name<input value={name} onChange={(event) => setName(event.target.value.replace(/[^a-zA-Z ]/g, ''))} maxLength={50} placeholder="Rohan Verma" className="field-input" /></label>
-          <p className="field-count">{name.length}/50</p>
-          <TopicSelector selected={topics} onChange={setTopics} customTopic={customTopic} onCustomTopic={setCustomTopic} />
-          {error && <p className="form-error">{error}</p>}
-          <button disabled={!valid || loading || !accessToken} className="accent-button">{loading ? 'Creating your page...' : user ? 'Start my streak' : 'Sign in to create a page'}</button>
+          {authLoading || checkingExisting ? <p className="auth-copy">Checking your sign-in...</p> : user ? <div className="auth-status"><span>Signed in as {user.email}</span><button type="button" onClick={() => void signOut()} className="auth-status__button">Sign out</button></div> : <button type="button" disabled={authAction} onClick={() => void startGoogleSignIn()} className="google-button">{authAction ? 'Opening Google...' : 'Continue with Google'}</button>}
+          {!authLoading && !checkingExisting && <>
+            <label className="field-label">Your name<input value={name} onChange={(event) => setName(event.target.value.replace(/[^a-zA-Z ]/g, ''))} maxLength={50} placeholder="Rohan Verma" className="field-input" /></label>
+            <p className="field-count">{name.length}/50</p>
+            <TopicSelector selected={topics} onChange={setTopics} customTopic={customTopic} onCustomTopic={setCustomTopic} />
+            {error && <p className="form-error">{error}</p>}
+            <button disabled={!valid || loading || !accessToken} className="accent-button">{loading ? 'Creating your page...' : user ? 'Start my streak' : 'Sign in to create a page'}</button>
+          </>}
           <p className="landing-form__note">Anyone with your link can view the public learning log.</p>
         </form>
       </section>
