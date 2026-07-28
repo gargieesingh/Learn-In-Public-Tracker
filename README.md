@@ -2,12 +2,15 @@
 
 StreakLog is a **learn-in-public streak tracker**, built as a submission for **Team Shiksha**. Create one public profile, post visual daily learning updates, and share the record with a link — no login required to view it, no matter who you are.
 
-**Live app:** [https://streak-tracker-web.vercel.app/](https://streak-tracker-web.vercel.app/)
+[**Visit Site**](https://streak-tracker-web.vercel.app/)
 
 ## Demo
 
-- Watch on YouTube: [https://youtu.be/0dStiuFgdMs](https://youtu.be/0dStiuFgdMs)
-- Or view the recording directly from this repo: [docs/LearnInPub.mp4](docs/LearnInPub.mp4)
+
+https://github.com/user-attachments/assets/ca5e27a3-51ce-4fd4-b8d0-d2934c14be99
+
+
+- [Watch on YouTube](https://youtu.be/0dStiuFgdMs)
 
 ## Screenshots
 
