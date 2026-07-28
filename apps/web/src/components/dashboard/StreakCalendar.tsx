@@ -29,7 +29,7 @@ export function StreakCalendar({ logs, isOwner, topics, onDelete }: { logs: Log[
   useGSAP(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     gsap.fromTo('.calendar-view', { opacity: 0, y: 5 }, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' })
-    gsap.fromTo('.calendar-chip.is-active', { backgroundColor: '#FDBA74' }, { backgroundColor: '#F97316', duration: 0.28, stagger: 0.012, ease: 'power1.out' })
+    gsap.fromTo('.calendar-chip.is-active', { backgroundColor: '#93C5FD' }, { backgroundColor: '#1E3A8A', duration: 0.28, stagger: 0.012, ease: 'power1.out' })
   }, { scope: root, dependencies: [range, logs] })
 
   const chip = (day: Date, content: React.ReactNode, compact = false) => {

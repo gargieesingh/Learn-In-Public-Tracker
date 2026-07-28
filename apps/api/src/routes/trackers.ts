@@ -17,6 +17,16 @@ async function generateUniqueSlug(base: string): Promise<string> {
   throw new Error('Could not generate a unique URL. Please try again.')
 }
 
+router.get('/me', requireAuth, async (req, res) => {
+  const { data, error } = await supabase
+    .from('trackers')
+    .select('slug, name, topics')
+    .eq('owner_id', req.userId)
+    .maybeSingle()
+  if (error) return res.status(500).json({ data: null, error: 'Could not look up your learning log.' })
+  return res.json({ data, error: null })
+})
+
 router.post('/', requireAuth, async (req, res) => {
   const { name, topics, customTopic } = req.body as { name?: string; topics?: string[]; customTopic?: string }
   const normalizedTopics = Array.isArray(topics)

@@ -11,6 +11,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   createTracker: (payload: CreateTrackerPayload, accessToken: string) => request<{ slug: string; name: string; topics: string[]; existing: boolean }>('/api/trackers', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + accessToken }, body: JSON.stringify(payload) }),
+  getMyTracker: (accessToken: string) => request<{ slug: string; name: string; topics: string[] } | null>('/api/trackers/me', { headers: { Authorization: 'Bearer ' + accessToken } }),
   getTracker: (slug: string) => request<Tracker>('/api/trackers/' + encodeURIComponent(slug)),
   getLogs: (slug: string, date?: string) => request<{ logs: Log[] }>('/api/logs/' + encodeURIComponent(slug) + (date ? '?date=' + date : '')),
   getOwnership: (slug: string, accessToken: string) => request<{ isOwner: boolean }>('/api/trackers/' + encodeURIComponent(slug) + '/ownership', { headers: { Authorization: 'Bearer ' + accessToken } }),
